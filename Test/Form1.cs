@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 
 namespace Test
@@ -21,62 +21,17 @@ namespace Test
         public Form1()
         {
             InitializeComponent();
-            string[] testlist = Directory.GetFiles("..\\tests", "*.txt");
+            string[] testlist = Directory.GetFiles("..\\tests", "*.dat");
             foreach (string test in testlist)
             {
                 comboBox1.Items.Add(test.Substring(9));
             }
             comboBox1.SelectedIndex = 0;
 
-        }
-        private void ImportTest(string name)
-        {
-            Spisok.Clear();
-            string line;
-            int i = 0;
-            StreamReader file = new StreamReader("..\\tests\\"+name);
-            while ((line = file.ReadLine()) != null)
-            {
-                Question new_que = new Question();
-                for (int j = 0; j < line.Length; j++)
-                {
-                    if (line[j] == '@')
-                        i++;
-                    else
-                    {
-
-                        if (i == 0)
-                            new_que.que += line[j];
-                        if (i == 1)
-                            new_que.ans1 += line[j];
-                        if (i == 2)
-                            new_que.ans2 += line[j];
-                        if (i == 3)
-                            new_que.ans3 += line[j];
-                        if (i == 4)
-                            new_que.ans4 += line[j];
-                        if (i == 5)
-                            new_que.right_ans = (int)line[j] - 48;
-                    }
-
-                }
-                i = 0;
-                Spisok.Add(new_que);
-
-            }
-            max = Spisok.Count;
-        }
-
-        public class Question
-        {
-            public string que;
-            public string ans1;
-            public string ans2;
-            public string ans3;
-            public string ans4;
-            public int right_ans;
 
         }
+
+
 
         private void Calculation(int answer)
         {
@@ -96,13 +51,14 @@ namespace Test
                 MessageBox.Show("Тест пройдет ваш результат " + score + " из " + max);
                 button1.Visible = true;
                 button6.Visible = true;
+                button7.Visible = true;
+                comboBox1.Visible = true;
+                label2.Visible = true;
                 button2.Visible = false;
                 button3.Visible = false;
                 button4.Visible = false;
                 button5.Visible = false;
-                comboBox1.Visible = true;
-                label2.Visible = true;
-                label1.Text = "тест на пид0ра";
+                label1.Text = "тест";
                 //Вывести сообщение что все конец и счет
             }
             else
@@ -115,25 +71,54 @@ namespace Test
             }
         
     }
+        private void Save(string name)
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            using (FileStream fs = new FileStream("..\\tests\\" + name, FileMode.OpenOrCreate))
+            {
+                formatter.Serialize(fs, Spisok);
+            }
+        }
+
+        private void Loadd(string name)
+        {
+            
+            BinaryFormatter formatter = new BinaryFormatter();
+            using (FileStream fs = new FileStream("..\\tests\\" + name, FileMode.OpenOrCreate))
+            {
+                Spisok = (List<Question>)formatter.Deserialize(fs);
+            }
+        }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            ImportTest(comboBox1.SelectedItem.ToString());
-            button6.Hide();
-            current = 0;
-            score = 0;
-            label1.Text = Spisok[current].que;
-            button2.Text = Spisok[current].ans1;
-            button3.Text = Spisok[current].ans2;
-            button4.Text = Spisok[current].ans3;
-            button5.Text = Spisok[current].ans4;
-            comboBox1.Visible = false;
-            label2.Visible = false;
-            button1.Visible = false;
-            button2.Visible = true;
-            button3.Visible = true;
-            button4.Visible = true;
-            button5.Visible = true;
+            Loadd(comboBox1.SelectedItem.ToString());
+            if (Spisok.Count == 0)
+            {
+                MessageBox.Show("Вопросов нет!");
+                return;
+            }
+            else
+            {
+                
+                max = Spisok.Count;
+                button6.Hide();
+                current = 0;
+                score = 0;
+                label1.Text = Spisok[current].que;
+                button2.Text = Spisok[current].ans1;
+                button3.Text = Spisok[current].ans2;
+                button4.Text = Spisok[current].ans3;
+                button5.Text = Spisok[current].ans4;
+                button1.Visible = false;
+                button2.Visible = true;
+                button3.Visible = true;
+                button4.Visible = true;
+                button5.Visible = true;
+                button7.Visible = false;
+                comboBox1.Visible = false;
+                label2.Visible = false;
+            }
 
         }
 
@@ -166,8 +151,11 @@ namespace Test
             Hide();
         }
 
-       
-
-       
+        private void button7_Click(object sender, EventArgs e)
+        {
+            Form4 fr4 = new Test.Form4(comboBox1.SelectedItem.ToString());
+            fr4.Show();
+            Hide();
+        }
     }
 }
