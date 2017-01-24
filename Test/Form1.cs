@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
 
 namespace Test
 {
@@ -19,53 +21,13 @@ namespace Test
         public Form1()
         {
             InitializeComponent();
-            string line;
-            int i = 0;
-            System.IO.StreamReader file = new System.IO.StreamReader("questions.txt");
-            while ((line = file.ReadLine()) != null)
-            {
-                Question new_que = new Question();
-                for (int j = 0; j < line.Length; j++)
-                {
-                    if (line[j] == '@')
-                        i++;
-                    else
-                    {
-
-                        if (i == 0)
-                            new_que.que += line[j];
-                        if (i == 1)
-                            new_que.ans1 += line[j];
-                        if (i == 2)
-                            new_que.ans2 += line[j];
-                        if (i == 3)
-                            new_que.ans3 += line[j];
-                        if (i == 4)
-                            new_que.ans4 += line[j];
-                        if (i == 5)
-                            new_que.right_ans = (int)line[j]-48;
-                    }
-
-                }
-                i = 0;
-                Spisok.Add(new_que);
-
-            }
+            Loadd();
             max = Spisok.Count;
             
 
         }
 
-        public class Question
-        {
-            public string que;
-            public string ans1;
-            public string ans2;
-            public string ans3;
-            public string ans4;
-            public int right_ans;
 
-        }
 
         private void Calculation(int answer)
         {
@@ -85,6 +47,7 @@ namespace Test
                 MessageBox.Show("Тест пройдет ваш результат " + score + " из " + max);
                 button1.Visible = true;
                 button6.Visible = true;
+                button7.Visible = true;
                 button2.Visible = false;
                 button3.Visible = false;
                 button4.Visible = false;
@@ -102,22 +65,48 @@ namespace Test
             }
         
     }
+        private void Save()
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            using (FileStream fs = new FileStream("question.dat", FileMode.OpenOrCreate))
+            {
+                formatter.Serialize(fs, Spisok);
+            }
+        }
+
+        private void Loadd()
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            using (FileStream fs = new FileStream("question.dat", FileMode.OpenOrCreate))
+            {
+                Spisok = (List<Question>)formatter.Deserialize(fs);
+            }
+        }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            button6.Hide();
-            current = 0;
-            score = 0;
-            label1.Text = Spisok[current].que;
-            button2.Text = Spisok[current].ans1;
-            button3.Text = Spisok[current].ans2;
-            button4.Text = Spisok[current].ans3;
-            button5.Text = Spisok[current].ans4;
-            button1.Visible = false;
-            button2.Visible = true;
-            button3.Visible = true;
-            button4.Visible = true;
-            button5.Visible = true;
+            if (Spisok.Count == 0)
+            {
+                MessageBox.Show("Вопросов нет!");
+                return;
+            }
+            else
+            {
+                button6.Hide();
+                current = 0;
+                score = 0;
+                label1.Text = Spisok[current].que;
+                button2.Text = Spisok[current].ans1;
+                button3.Text = Spisok[current].ans2;
+                button4.Text = Spisok[current].ans3;
+                button5.Text = Spisok[current].ans4;
+                button1.Visible = false;
+                button2.Visible = true;
+                button3.Visible = true;
+                button4.Visible = true;
+                button5.Visible = true;
+                button7.Visible = false;
+            }
 
         }
 
@@ -147,6 +136,13 @@ namespace Test
         {
             Form2 fr2 = new Test.Form2();
             fr2.Show();
+            Hide();
+        }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+            Form4 fr4 = new Test.Form4();
+            fr4.Show();
             Hide();
         }
     }
