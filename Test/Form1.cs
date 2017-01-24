@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System;
+using System.IO;
 
 namespace Test
 {
@@ -19,9 +21,20 @@ namespace Test
         public Form1()
         {
             InitializeComponent();
+            string[] testlist = Directory.GetFiles("..\\tests", "*.txt");
+            foreach (string test in testlist)
+            {
+                comboBox1.Items.Add(test.Substring(9));
+            }
+            comboBox1.SelectedIndex = 0;
+
+        }
+        private void ImportTest(string name)
+        {
+            Spisok.Clear();
             string line;
             int i = 0;
-            System.IO.StreamReader file = new System.IO.StreamReader("questions.txt");
+            StreamReader file = new StreamReader("..\\tests\\"+name);
             while ((line = file.ReadLine()) != null)
             {
                 Question new_que = new Question();
@@ -43,7 +56,7 @@ namespace Test
                         if (i == 4)
                             new_que.ans4 += line[j];
                         if (i == 5)
-                            new_que.right_ans = (int)line[j]-48;
+                            new_que.right_ans = (int)line[j] - 48;
                     }
 
                 }
@@ -52,8 +65,6 @@ namespace Test
 
             }
             max = Spisok.Count;
-            
-
         }
 
         public class Question
@@ -89,7 +100,9 @@ namespace Test
                 button3.Visible = false;
                 button4.Visible = false;
                 button5.Visible = false;
-                label1.Text = "тест";
+                comboBox1.Visible = true;
+                label2.Visible = true;
+                label1.Text = "тест на пид0ра";
                 //Вывести сообщение что все конец и счет
             }
             else
@@ -105,6 +118,7 @@ namespace Test
 
         private void button1_Click(object sender, EventArgs e)
         {
+            ImportTest(comboBox1.SelectedItem.ToString());
             button6.Hide();
             current = 0;
             score = 0;
@@ -113,6 +127,8 @@ namespace Test
             button3.Text = Spisok[current].ans2;
             button4.Text = Spisok[current].ans3;
             button5.Text = Spisok[current].ans4;
+            comboBox1.Visible = false;
+            label2.Visible = false;
             button1.Visible = false;
             button2.Visible = true;
             button3.Visible = true;
@@ -149,5 +165,9 @@ namespace Test
             fr2.Show();
             Hide();
         }
+
+       
+
+       
     }
 }
